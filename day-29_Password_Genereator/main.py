@@ -1,6 +1,7 @@
 from tkinter import Tk, Canvas , PhotoImage , Entry , Label , Button , END , messagebox
 from random import choice , randint , shuffle
 import pyperclip
+import json
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
 def generate_password():
@@ -29,19 +30,36 @@ def save_password():
     website = website_input.get()
     email = Email_input.get()
     password = password_input.get()
+    new_data = {website : {
+        "email" : email ,
+        "password" : password ,
+        }
+    }
 
     if len(website) == 0 or len(password) == 0:
         messagebox.showinfo(title = "OOPS" , message = "Plase make sure you haven' t left any fields empty")
 
     else:
-        is_okay = messagebox.askokcancel(title=website,
-                                         message=f"These are the details entered : \n Email : {email}\nPassword:{password}\nIs it okay to save?")
-        if is_okay :
-            with open ("data.txt" , "a") as file:
-                file.write(f"{website} | {email} | {password}\n")
-                website_input.delete(0,END)
-                Email_input.delete(0,END)
-                password_input.delete(0,END)
+        try:
+           with open ("data.json" , "r") as file:
+               #Reading old data
+                data = json.load(file)
+
+        except FileNotFoundError:
+            with open("data.json", "w") as file:
+                json.dump(new_data,file, indent =4)
+        else:
+            # Updating old data with new data
+            data.update(new_data)
+
+
+            with open("data.json", "w") as file:
+                #Saving updated data
+                json.dump(data , file,indent =4)
+
+        finally:
+            website_input.delete(0,END)
+            password_input.delete(0,END)
 
     # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
@@ -55,7 +73,7 @@ canvas.create_image(100,100,image = logo_img )
 canvas.grid(column =1 , row=0)
 
 website_label = Label(text="Website:" , font=("New Times Roman",10) )
-website_input = Entry(width =50)
+website_input = Entry(width =30)
 website_input.grid(column=1,row=1 , columnspan = 2 , sticky="w")
 website_input.focus()
 website_label.grid(column=0,row=1)
@@ -77,7 +95,8 @@ generate_password_button.grid(column=2,row=3 )
 add_button = Button(text = "Add" , width = 36 , command = save_password)
 add_button.grid(row =4 , column=1 , columnspan = 2 , sticky="w")
 
-
+search_button = Button(text = "Search" )
+search_button.grid(column=2,row=1)
 
 
 
